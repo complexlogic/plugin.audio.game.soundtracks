@@ -21,5 +21,7 @@
           <screenshot>resources/screenshot-02.jpg</screenshot>
           <screenshot>resources/screenshot-03.jpg</screenshot>
         </assets>
+        <news>v1.0 (2022-2-12)
+            - Initial Release</news>
     </extension>
 </addon>
