@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.audio.game.soundtracks" name="Game Soundtracks" version="1.0" provider-name="complexlogic">
+    <requires>
+        <import addon="xbmc.python" version="3.0.0" />
+        <import addon="script.module.beautifulsoup4" version="4.3.2"/>
+        <import addon="script.module.requests" version="2.9.1"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="addon.py">
+        <provides>audio</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en_US">Audio plugin for video game soundtracks</summary>
+        <description lang="en_US">A Kodi audio plugin for listening to and downloading video game soundtracks. The plugin scrapes the site KHInsider, which hosts the most comprehensive collection of video game soundtracks available online.</description>
+        <license>Unlicense</license>
+        <language>en</language>
+        <platform>all</platform>
+        <assets>
+          <icon>resources/icon.png</icon>
+          <fanart>resources/fanart.jpg</fanart>
+          <screenshot>resources/screenshot-01.jpg</screenshot>
+          <screenshot>resources/screenshot-02.jpg</screenshot>
+          <screenshot>resources/screenshot-03.jpg</screenshot>
+        </assets>
+    </extension>
+</addon>

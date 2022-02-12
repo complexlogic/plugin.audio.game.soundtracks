@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <category label="Manage Bookmarks">
+        <setting label="Download Location" type="folder" id="download_location" source="music" option="writeable"/>
+        <setting label="Delete Bookmark(s)" type="action" action="RunScript($ID,delete_bookmark)"/>
+        <setting label="Delete All Bookmarks" type="action" action="RunScript($ID,delete_all_bookmarks)"/>
+    </category>
+</settings>
