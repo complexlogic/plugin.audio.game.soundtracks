@@ -2,7 +2,7 @@
 Game Soundtracks is a Kodi audio plugin for listening to and downloading video game music. The plugin scrapes the site [KHInsider](https://downloads.khinsider.com/), which hosts the most comprehensive collection of video game soundtracks available online.
 
 ## Installation
-Download the latest [plugin.audio.game.soundtracks.zip](https://github.com/complexlogic/plugin.audio.game.soundtracks/releases/download/v1.0/plugin.audio.game.soundtracks.zip) file from the release page. In Kodi, navigate to Add-ons->Install from zip file, and select the zip file.
+Download the latest [plugin.audio.game.soundtracks.zip](https://github.com/complexlogic/plugin.audio.game.soundtracks/releases/download/v1.0.1/plugin.audio.game.soundtracks.zip) file from the release page. In Kodi, navigate to Add-ons->Install from zip file, and select the zip file.
 
 ## Usage
 Open the plugin from your add-on menu. The plugin contains several browsing modes for finding music:
