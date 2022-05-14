@@ -7,134 +7,11 @@ import xbmcplugin
 import xbmcvfs
 import requests
 import sqlite3
+import lib.scrapers as scraper
+from lib.defines import *
+from lib.util import *
 from bs4 import BeautifulSoup
 
-#static URLs
-KHINSIDER_URL = "https://downloads.khinsider.com"
-PLATFORM_URL = "https://downloads.khinsider.com/console-list"
-TOP100_URL = "https://downloads.khinsider.com/last-6-months-top-100"
-DB_FILE = "bookmarks.db"
-
-#static alphabet directory
-ALPHABET_DIRECTORY = ({'url': 'num', 'title': '#', 'playable': 'false'},
-                      {'url': 'A', 'title': 'A', 'playable': 'false'},
-                      {'url': 'B', 'title': 'B', 'playable': 'false'},
-                      {'url': 'C', 'title': 'C', 'playable': 'false'},
-                      {'url': 'D', 'title': 'D', 'playable': 'false'},
-                      {'url': 'E', 'title': 'E', 'playable': 'false'},
-                      {'url': 'F', 'title': 'F', 'playable': 'false'},
-                      {'url': 'G', 'title': 'G', 'playable': 'false'},
-                      {'url': 'H', 'title': 'H', 'playable': 'false'},
-                      {'url': 'I', 'title': 'I', 'playable': 'false'},
-                      {'url': 'J', 'title': 'J', 'playable': 'false'},
-                      {'url': 'K', 'title': 'K', 'playable': 'false'},
-                      {'url': 'L', 'title': 'L', 'playable': 'false'},
-                      {'url': 'M', 'title': 'M', 'playable': 'false'},
-                      {'url': 'N', 'title': 'N', 'playable': 'false'},
-                      {'url': 'O', 'title': 'O', 'playable': 'false'},
-                      {'url': 'P', 'title': 'P', 'playable': 'false'},
-                      {'url': 'Q', 'title': 'Q', 'playable': 'false'},
-                      {'url': 'R', 'title': 'R', 'playable': 'false'},
-                      {'url': 'S', 'title': 'S', 'playable': 'false'},
-                      {'url': 'T', 'title': 'T', 'playable': 'false'},
-                      {'url': 'U', 'title': 'U', 'playable': 'false'},
-                      {'url': 'V', 'title': 'V', 'playable': 'false'},
-                      {'url': 'W', 'title': 'W', 'playable': 'false'},
-                      {'url': 'X', 'title': 'X', 'playable': 'false'},
-                      {'url': 'Y', 'title': 'Y', 'playable': 'false'},
-                      {'url': 'Z', 'title': 'Z', 'playable': 'false'})
-
-#static main menu directory
-MAIN_MENU_DIRECTORY = ({'url': 'browse_title', 'title': 'Browse by Title', 'playable': 'false'},
-                       {'url': 'browse_platform', 'title': 'Browse by Platform Name', 'playable': 'false'},
-                       {'url': 'browse_series', 'title': 'Browse by Popular Series', 'playable': 'false'},
-                       {'url': 'browse_top100', 'title': 'Browse Top 100', 'playable': 'false'},
-                       {'url': 'display_bookmarks_main', 'title': 'Bookmarks', 'playable': 'false', 'type': 'directory'})
-
-# Function to scrape the alphanumeric title pages
-def alphabet_scraper(page):
-    albums = []
-
-    # Album URL is in "href" attribute of "a" tag that is child of "p"
-    for item in page.find_all('a'):
-        url = str(item.get("href"))
-        if "/game-soundtracks/album/" in url and item.parent.name == "p":
-            albums.append({"url": url,"title": item.string,
-                           "playable": "false", "type": "album"})
-    return albums
-
-# Function to scrape platforms
-def platform_scraper(page):
-    platforms = []
-
-    # Platform URL is in "href" attribute of "a" tag that is child of "div"
-    for item in page.find_all('a'):
-        url = str(item.get("href"))
-        if "/game-soundtracks/" in url and item.parent.name == "div":
-            platforms.append({"url": url,"title": item.string,
-                              "playable": "false", "type": "album"})
-    return platforms
-
-# Function to scrape top 100 albums
-def top100_scraper(page):
-    albums = []
-
-    # Album URL is in "href" attribute of "a" tag
-    for item in page.find_all('a'):
-        url = str(item.get("href"))
-        if "/game-soundtracks/album/" in url:
-            albums.append({"url": url, "title": item.string,
-                           "playable": "false", "type": "album"})
-    return albums
-
-# Function to scrape popular series
-def popular_series_scraper(page):
-    albums = []
-
-    # Series URL is in "href" attribute of a tag, that has "Popular Series" in
-    # the string of the fourth parent's sibling "h3" tag
-    for item in page.find_all('a'):
-        url = str(item.get("href"))
-        table_head = item.parent.parent.parent.parent.parent
-        if "Popular Series" in table_head.find("h3").string:
-            albums.append({"url": url,"title": item.string,
-                           "playable": "false", "type": "album"})
-    return albums
-
-# Function to scrape the songs in an album
-def album_scraper(page):
-    songs = []
-    urls = []
-    cover = ""
-    # Song page URL is located in "href" attribute of "a" tag
-    for item in page.find_all('a'):
-        url = str(item.get("href"))
-        if ((".png" in url or ".jpg" in url)
-                and "https://vgmsite.com/soundtracks" in url and cover == ""):
-            cover = url
-        elif ".mp3" in url and url not in urls:
-            urls.append(url)
-            # If track number is present
-            try:
-                sibling = item.parent.find_previous_sibling("td").string
-                track_number = int(sibling.split(".")[0])
-                songs.append({"url": url, "title": item.string, "tracknumber":
-                               track_number, "cover": cover, "playable": "true",
-                               "type": "song"})
-            # If track number is not present
-            except:
-                songs.append({"url": url, "title": item.string,
-                              "playable": "true", "type": "song"})
-    return songs
-
-# Function to get the final URL of a song
-def mp3_scraper(page):
-    # Audio file URL is located in "href" attribute of "a" tag
-    for item in page.find_all('a'):
-        url = str(item.get("href"))
-        if "https://vgmsite.com/soundtracks/" in url and ".mp3" in url:
-            return url
-    return None
 
 # Function to build a URL to pass back to the plugin
 def build_url(query):
@@ -216,37 +93,10 @@ def play(url):
     play_item = xbmcgui.ListItem(path=url)
     xbmcplugin.setResolvedUrl(addon_handle, True, listitem=play_item)
 
-# Function to perform HTTP requests
-def http_request(url):
-    useragent = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                 "AppleWebKit/537.36 (KHTML, like Gecko) "
-                 "Chrome/90.0.4430.212 Safari/537.36")
-    headers = {"User-Agent": useragent}
-    return requests.get(url, headers=headers)
-
-# Function to download a web page and convert to Beautiful Soup object
-def get_page(url):
-    response = http_request(url)
-    if response.status_code == 200:
-        return BeautifulSoup(response.text,"html.parser")
-    else:
-        return None
-
-# Function to get the final URL for a song
-def resolve_song_url(url):
-    url = KHINSIDER_URL + url
-    page = get_page(url)
-    if page is None:
-        return None
-    return mp3_scraper(page)
-
 # Function to get a list of songs in an album
 def get_songs_from_album(url):
     url = KHINSIDER_URL + url
-    page = get_page(url)
-    if page is None:
-        return None, 0
-    songs = album_scraper(page)
+    songs = scraper.album(url)
     total_songs = len(songs)
     return songs, total_songs
 
@@ -263,7 +113,7 @@ def display_songs(url):
     for i in range(total_songs):
         if progress_dialog.iscanceled() == True:
             return None
-        song_url = resolve_song_url(songs[i]["url"])
+        song_url = scraper.mp3(songs[i]["url"])
         if song_url is not None:
             songs[i]["url"] = song_url
         progress_dialog.update(100 * (i + 1) // total_songs,
@@ -332,7 +182,7 @@ def download(item):
         for i in range(total_songs):
             if progress_dialog.iscanceled() == True:
                 return
-            song_url = resolve_song_url(songs[i]["url"])
+            song_url = scraper.mp3(songs[i]["url"])
             if song_url is not None:
                 songs[i]["url"] = song_url
                 download_song(output_dir, songs[i])
@@ -346,10 +196,8 @@ def display_albums_by_letter(url):
         url = "https://downloads.khinsider.com/game-soundtracks/browse/" + "%23"
     else:
         url = "https://downloads.khinsider.com/game-soundtracks/browse/" + url
-    page = get_page(url)
-    if page is None:
-        return
-    albums = alphabet_scraper(page)
+
+    albums = scraper.alphabet(url)
 
     # Display albums
     build_directory(albums, "display_songs")
@@ -360,7 +208,7 @@ def display_albums_by_platform(url):
     page = get_page(url)
     if page is None:
         return
-    albums = alphabet_scraper(page)
+    albums = scraper.alphabet(url)
 
     # Display albums
     build_directory(albums, "display_songs")
@@ -371,7 +219,7 @@ def display_albums_by_series(url):
     page = get_page(url)
     if page is None:
         return
-    albums = alphabet_scraper(page)
+    albums = scraper.alphabet(url)
 
     #Display albums
     build_directory(albums, "display_songs")
@@ -385,26 +233,17 @@ def display_category(url):
 
     # User pressed "Browse by Platform"
     elif url == "browse_platform":
-        page = get_page(PLATFORM_URL)
-        if page is None:
-            return
-        platforms = platform_scraper(page)
+        platforms = scraper.platform(PLATFORM_URL)
         build_directory(platforms, "display_albums_by_platform")
 
     # User pressed "Browse by Popular Series"
     elif url == "browse_series":
-        page = get_page(KHINSIDER_URL)
-        if page is None:
-            return
-        popular_series = popular_series_scraper(page)
+        popular_series = scraper.popular_series(KHINSIDER_URL)
         build_directory(popular_series, "display_albums_by_series")
 
     # User pressed "Browse Top 100"
     elif url == "browse_top100":
-        page = get_page(TOP100_URL)
-        if page is None:
-            return
-        albums = top100_scraper(page)
+        albums = scraper.top100(TOP100_URL)
         build_directory(albums, "display_songs")
 
     # User pressed "Bookmarks"
