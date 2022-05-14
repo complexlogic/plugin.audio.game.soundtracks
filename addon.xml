@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.audio.game.soundtracks" name="Game Soundtracks" version="1.0" provider-name="complexlogic">
+<addon id="plugin.audio.game.soundtracks" name="Game Soundtracks" version="1.0.1" provider-name="complexlogic">
     <requires>
         <import addon="xbmc.python" version="3.0.0" />
         <import addon="script.module.beautifulsoup4" version="4.3.2"/>
@@ -21,7 +21,11 @@
           <screenshot>resources/screenshot-02.jpg</screenshot>
           <screenshot>resources/screenshot-03.jpg</screenshot>
         </assets>
-        <news>v1.0 (2022-2-12)
+        <news>
+            v1.0.1 (2022-5-14)
+            - Updated scrapers
+            
+            v1.0 (2022-2-12)
             - Initial Release</news>
     </extension>
 </addon>
