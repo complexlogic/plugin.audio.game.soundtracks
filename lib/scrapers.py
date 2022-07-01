@@ -77,11 +77,9 @@ def popular_series(url):
 
     # Series URL is in "href" attribute of a tag, that has "Popular Series" in
     # the string of the fourth parent's sibling "h3" tag
-    for item in page.find_all('a'):
-        url = str(item.get("href"))
-        table_head = item.parent.parent.parent.parent.parent
-        if "Popular Series" in table_head.find("h3").string:
-            albums.append({"url": url,"title": item.string,
+    for item in page.find_all("a", class_="mainlevel"):
+        if (item.parent.parent.find_previous_sibling("h3").string == "Popular Series"):
+            albums.append({"url": str(item.get("href")), "title": item.string,
                            "playable": "false", "type": "album"})
     return albums
 
